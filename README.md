@@ -1,10 +1,8 @@
 # SmartBrake Edu
 
-SmartBrake Edu adalah sistem telemetri berbasis ESP32 untuk membantu evaluasi praktik pengereman sepeda motor pada pelatihan *safety riding*. Sistem mengintegrasikan pembacaan tekanan rem depan dan belakang secara relatif, kecepatan roda depan dan belakang, perhitungan distribusi penggunaan rem F:R, serta Web Dashboard dan Data Logger melalui jaringan Wi-Fi lokal.
+SmartBrake Edu adalah prototipe sistem telemetri pengereman berbasis ESP32 yang dikembangkan untuk membantu observasi praktik pengereman sepeda motor pada pelatihan *safety riding*. Sistem memperoleh data tekanan rem depan dan belakang dalam bentuk persentase relatif, membaca kecepatan roda depan dan belakang, menghitung distribusi penggunaan rem F:R, serta menampilkan dan merekam data melalui Web Dashboard pada jaringan Wi-Fi lokal.
 
-## Tujuan
-
-SmartBrake Edu dikembangkan sebagai perangkat bantu instruktur untuk memberikan data pendukung selama evaluasi praktik pengereman. Sistem tidak dimaksudkan untuk menggantikan penilaian visual instruktur, melainkan menambahkan informasi kuantitatif mengenai pola penggunaan rem dan perubahan kecepatan selama sesi pengujian.
+Repository ini digunakan sebagai dokumentasi teknis source code dan desain perangkat keras SmartBrake Edu.
 
 ## Fitur Utama
 
@@ -12,14 +10,17 @@ SmartBrake Edu dikembangkan sebagai perangkat bantu instruktur untuk memberikan 
 - Kalibrasi relatif menggunakan metode **Set Zero–Set Max**.
 - Pembacaan kecepatan roda depan dan belakang menggunakan sensor *magnetic pickup*.
 - Perhitungan distribusi penggunaan rem depan dan belakang (F:R).
-- Web Dashboard berbasis jaringan Wi-Fi lokal ESP32.
-- Data Logger berbasis browser untuk merekam sesi pengujian.
+- ESP32 sebagai *local access point* dan Web Server.
+- Web Dashboard responsif untuk smartphone, tablet, dan laptop.
+- Data Logger berbasis browser.
+- Brake Test History dan Session Manager.
 - Grafik kecepatan dan tekanan selama sesi.
-- Riwayat sesi dan ekspor data.
-- Penyimpanan parameter perangkat menggunakan NVS/Preferences.
-- Dukungan pembaruan firmware melalui OTA.
+- Brake Event Timeline dan Distribution History.
+- Ekspor data hasil sesi.
+- Penyimpanan konfigurasi perangkat menggunakan Preferences/NVS.
+- Pembaruan firmware melalui OTA.
 
-## Arsitektur Sistem
+## Arsitektur Singkat
 
 ```text
 Sensor Tekanan Depan & Belakang
@@ -67,10 +68,10 @@ Sensor Magnetic Pickup F/R        |
 - ESP32 DevKit V1
 - 2 sensor tekanan hidrolik
 - 2 sensor *magnetic pickup*
-- Rangkaian pengondisi sinyal analog
-- PC817 pada jalur sensor kecepatan
+- PC817 pada antarmuka sensor kecepatan
+- rangkaian pengondisi sinyal analog
 - LED indikator sistem dan sensor
-- Sistem catu daya portabel
+- sistem catu daya portabel
 
 ## Konfigurasi GPIO
 
@@ -80,7 +81,7 @@ Sensor Magnetic Pickup F/R        |
 | Sensor tekanan belakang | 33 |
 | Sensor kecepatan roda depan | 26 |
 | Sensor kecepatan roda belakang | 27 |
-| LED System | 2 |
+| LED system | 2 |
 | LED tekanan depan | 5 |
 | LED tekanan belakang | 19 |
 | LED kecepatan depan | 3 |
@@ -94,11 +95,14 @@ SmartBrake-Edu/
 ├── platformio.ini
 ├── .gitignore
 ├── src/
-│   └── README.md
+│   └── main.cpp
 ├── docs/
 │   ├── hardware/
 │   │   └── README.md
 │   ├── schematic/
+│   │   ├── BrakePressure4.kicad_pro
+│   │   ├── BrakePressure4.kicad_sch
+│   │   ├── BrakePressure4.kicad_pcb
 │   │   └── README.md
 │   └── screenshots/
 │       └── README.md
@@ -106,11 +110,19 @@ SmartBrake-Edu/
     └── README.md
 ```
 
-Source firmware utama (`src/main.cpp`) akan ditambahkan dari versi final yang digunakan pada perangkat agar isi repository tetap sesuai dengan implementasi aktual.
+## Source Code
+
+Firmware utama dan Web Dashboard berada pada:
+
+```text
+src/main.cpp
+```
+
+Web Dashboard disimpan di dalam firmware menggunakan `PROGMEM`, sehingga HTML, CSS, dan JavaScript berada pada file source yang sama dengan program ESP32.
 
 ## Pengembangan dengan PlatformIO
 
-Project dikembangkan menggunakan framework Arduino pada PlatformIO untuk board ESP32 DevKit V1.
+Project menggunakan framework Arduino pada PlatformIO untuk board ESP32 DevKit V1.
 
 Build firmware:
 
@@ -118,18 +130,52 @@ Build firmware:
 pio run
 ```
 
-Upload mengikuti environment dan metode upload yang didefinisikan pada `platformio.ini`.
+Konfigurasi build dan metode upload terdapat pada `platformio.ini`.
+
+### Upload USB
+
+Untuk upload melalui kabel USB, gunakan `upload_protocol = esptool` pada `platformio.ini`.
+
+### Upload OTA
+
+Konfigurasi repository menyediakan pengaturan OTA menggunakan `espota` pada alamat lokal perangkat. Pastikan komputer telah terhubung ke jaringan SmartBrake Edu sebelum melakukan upload OTA.
+
+## Konfigurasi Wi-Fi
+
+Demi keamanan repository publik, password Access Point pada `src/main.cpp` menggunakan placeholder:
+
+```cpp
+const char* AP_PASS = "CHANGE_ME";
+```
+
+Ganti nilai tersebut dengan password yang akan digunakan pada perangkat sebelum melakukan build untuk penggunaan aktual. Jangan menyimpan password pribadi atau kredensial sensitif di repository publik.
+
+## Desain KiCad
+
+Berkas proyek KiCad tersedia pada folder [`docs/schematic`](docs/schematic):
+
+- `BrakePressure4.kicad_sch`
+- `BrakePressure4.kicad_pcb`
+- `BrakePressure4.kicad_pro`
 
 ## Catatan Pengukuran
 
-Nilai tekanan pada SmartBrake Edu merupakan **persentase tekanan relatif** hasil kalibrasi Set Zero–Set Max. Sistem tidak dikalibrasi sebagai instrumen pengukuran tekanan absolut dalam satuan PSI, bar, atau MPa dan tidak mengukur gaya pengereman aktual pada bidang kontak ban dengan jalan.
+Nilai tekanan yang ditampilkan SmartBrake Edu merupakan **persentase tekanan relatif** berdasarkan kalibrasi Set Zero–Set Max. Sistem tidak dikalibrasi sebagai instrumen pengukuran tekanan absolut dalam satuan PSI, bar, atau MPa dan tidak mengukur gaya pengereman aktual pada bidang kontak ban dengan permukaan jalan.
 
-Parameter kecepatan digunakan sebagai data pendukung selama evaluasi sesi pengereman dan bukan sebagai klaim pengukuran kecepatan terkalibrasi terhadap instrumen referensi.
+Parameter kecepatan digunakan sebagai data pendukung untuk mengamati perubahan laju selama sesi dan tidak dinyatakan sebagai hasil pengukuran kecepatan terkalibrasi terhadap instrumen referensi.
 
-## Konteks Pengembangan
+## Konteks Akademik
 
-Repository ini digunakan sebagai dokumentasi teknis pengembangan SmartBrake Edu untuk proyek akademik di bidang teknik otomotif dan evaluasi praktik *safety riding*.
+SmartBrake Edu dikembangkan dalam Proyek Akhir Program Studi D4 Teknik Mesin Otomotif, Fakultas Vokasi, Universitas Negeri Yogyakarta.
 
-## Status
+**Pengembang:** Chiko Casillas  
+**Tahun:** 2026
 
-Dokumentasi repository sedang disusun berdasarkan konfigurasi final perangkat yang digunakan pada pengujian lapangan.
+## Status Repository
+
+- Firmware utama: tersedia.
+- Web Dashboard: terintegrasi pada firmware.
+- Skematik KiCad: tersedia.
+- Layout PCB KiCad: tersedia.
+- Konfigurasi PlatformIO: tersedia.
+- Folder data dan dokumentasi tambahan: disiapkan untuk contoh data serta dokumentasi akademik yang dapat dipublikasikan.
