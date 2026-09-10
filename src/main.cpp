@@ -23,7 +23,7 @@
 // WIFI AP & CAPTIVE PORTAL SETTINGS
 // =====================================================
 const char* AP_SSID = "SMART BRAKE EDU";
-const char* AP_PASS = "edubrake2026";
+const char* AP_PASS = "CHANGE_ME";
 const char* OTA_HOSTNAME = "SMART-BRAKE-EDU";
 
 const byte DNS_PORT = 53;
