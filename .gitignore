@@ -6,3 +6,4 @@ Thumbs.db
 *.bin
 *.elf
 *.map
+*.kicad_prl
