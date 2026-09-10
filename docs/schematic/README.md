@@ -1,9 +1,11 @@
-# Schematic
+# KiCad Hardware Design
 
-Folder ini digunakan untuk dokumentasi skematik rangkaian SmartBrake Edu.
+Folder ini memuat berkas desain perangkat keras SmartBrake Edu yang digunakan untuk dokumentasi proyek.
 
-Dokumen yang disarankan ditempatkan di sini:
-- skematik rangkaian final;
-- koneksi sensor tekanan depan dan belakang;
-- koneksi sensor kecepatan depan dan belakang melalui PC817;
-- rangkaian pengondisi sinyal dan catu daya.
+## Berkas
+
+- `BrakePressure4.kicad_sch` — skematik rangkaian SmartBrake Edu.
+- `BrakePressure4.kicad_pcb` — layout PCB SmartBrake Edu.
+- `BrakePressure4.kicad_pro` — berkas proyek KiCad.
+
+Berkas preferensi lokal KiCad (`*.kicad_prl`) tidak disertakan karena tidak diperlukan untuk membuka atau meninjau desain utama.
